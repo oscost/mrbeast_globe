@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Great Circle Triple Finder</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Great Circle Triple Finder</h1>
+      <p class="hint">
+        Enter one location per line as:
+        <code>&lt;place name&gt;, LAT, LONG</code>
+        (LAT/LONG may be decimal signed or use hemisphere, e.g. <code>36.7538° N, 3.0588° E</code>).
+      </p>
+      <section class="top-grid">
+        <form id="input-form">
+          <label for="locations">Locations</label>
+          <textarea id="locations" rows="12" spellcheck="false">New York, 40.7128, -74.0060
+London, 51.5072, -0.1276
+Paris, 48.8566, 2.3522
+Chicago, 41.8781, -87.6298
+Tokyo, 35.6764, 139.6500</textarea>
+          <button type="submit">Submit</button>
+        </form>
+
+        <section class="map-panel">
+          <div class="map-header">
+            <span id="map-count" class="map-count">0 points loaded</span>
+          </div>
+          <svg id="map-svg" viewBox="0 0 720 360" aria-label="Equirectangular map"></svg>
+          <div id="overlay-legend" class="overlay-legend"></div>
+        </section>
+      </section>
+
+      <section class="globe-panel">
+        <div class="map-header globe-header">
+          <span id="globe-count" class="map-count">0 points loaded</span>
+          <label class="globe-toggle">
+            <input id="globe-labels-toggle" type="checkbox" checked />
+            Show names
+          </label>
+          <span class="globe-hint">Drag to rotate</span>
+          <button id="globe-reset-btn" type="button" class="globe-reset-btn">Reset</button>
+        </div>
+        <svg id="globe-svg" viewBox="0 0 360 360" aria-label="Orthographic globe"></svg>
+      </section>
+
+      <section id="summary" class="summary"></section>
+      <section id="errors" class="errors"></section>
+
+      <section class="word-circle-panel">
+        <h2>Alternating Word Great Circles</h2>
+        <p class="hint">
+          Enter words for two sets. Output circles alternate as
+          <code>Set1, Set2, Set1, Set2, ...</code>. Each word is used at most once and all Set 2
+          words must be used. Minimum pairs per circle sets the smallest circle size. If entries
+          include coordinates, circles are optimized to reduce distance to the best-fit line.
+        </p>
+        <div class="word-circle-grid">
+          <label>
+            Set 1 Words (one per line)
+            <textarea id="set1-words" rows="6" spellcheck="false"></textarea>
+          </label>
+          <label>
+            Set 2 Words (one per line)
+            <textarea id="set2-words" rows="6" spellcheck="false"></textarea>
+          </label>
+        </div>
+        <div class="word-circle-controls">
+          <label for="pairs-per-circle">Minimum pairs per circle</label>
+          <input
+            id="pairs-per-circle"
+            class="mono"
+            type="number"
+            min="1"
+            step="1"
+            value="3"
+            aria-label="Minimum pairs per circle for alternating word circles"
+          />
+          <button id="generate-word-circles-btn" type="button">Generate Circles</button>
+        </div>
+        <section id="word-circle-status" class="summary"></section>
+        <section id="word-circle-errors" class="errors"></section>
+        <section id="word-circle-results"></section>
+      </section>
+
+      <section class="cutoff-panel">
+        <label for="cutoff-range">Great-Circle Distance Cutoff (miles)</label>
+        <input
+          id="cutoff-range"
+          type="range"
+          min="0"
+          max="10000"
+          value="10"
+          step="1"
+        />
+        <input
+          id="cutoff-input"
+          class="mono"
+          type="number"
+          min="0"
+          max="10000"
+          step="1"
+          value="10"
+          aria-label="Great-circle distance cutoff miles input"
+        />
+      </section>
+      <label class="cutoff-toggle">
+        <input id="plot-cutoff-circles" type="checkbox" />
+        Plot all triplet great circles under cutoff
+      </label>
+
+      <section id="triplet-table-summary" class="summary"></section>
+      <section id="results"></section>
+
+      <section class="tolerance-panel">
+        <label for="min-locations-range">Minimum Locations In Set (m)</label>
+        <input
+          id="min-locations-range"
+          type="range"
+          min="3"
+          max="100"
+          value="3"
+          step="1"
+        />
+        <input
+          id="min-locations-input"
+          class="mono"
+          type="number"
+          min="3"
+          max="100"
+          step="1"
+          value="3"
+          aria-label="Minimum locations in deduplicated set"
+        />
+      </section>
+      <section class="best-fit-panel">
+        <label for="best-n-input">Top-N Best-Fit Circles (all points)</label>
+        <div class="best-fit-controls">
+          <input
+            id="best-n-input"
+            class="mono"
+            type="number"
+            min="1"
+            step="1"
+            value="1"
+            aria-label="Number of best-fit circles to show"
+          />
+          <button id="best-n-btn" type="button">Show Best Fits</button>
+        </div>
+        <div id="best-n-summary" class="summary"></div>
+      </section>
+
+      <section id="three-point-fit" class="three-point-fit">
+        <h2>Triplet Great Circle Plotter</h2>
+        <p class="hint">
+          Add one or more rows with 3+ locations from the input list, then plot their best-fit great
+          circles. Use the "Show" toggle per row to hide/unhide a curve and its points on the map.
+        </p>
+        <div class="three-point-actions">
+          <button id="add-triplet-btn" type="button">Add Row</button>
+          <button id="plot-triplets-btn" type="button">Plot Triplets</button>
+        </div>
+        <div id="triplet-rows" class="triplet-rows"></div>
+        <section id="fit-info" class="summary"></section>
+        <h3>Intersections</h3>
+        <div class="intersection-controls">
+          <label>
+            Line A
+            <select id="intersection-a"></select>
+          </label>
+          <label>
+            Line B
+            <select id="intersection-b"></select>
+          </label>
+          <button id="intersection-calc" type="button">Calculate Intersection</button>
+        </div>
+        <section id="intersection-selected" class="summary"></section>
+        <section id="intersection-results"></section>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

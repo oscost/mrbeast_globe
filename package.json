@@ -1,6 +1,7 @@
 {
   "name": "greatcircle",
   "version": "1.0.0",
+  "homepage": "https://oscost.github.io/mrbeast_globe",
   "private": true,
   "description": "Great-circle triple finder",
   "scripts": {

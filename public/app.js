@@ -877,6 +877,22 @@ function buildPairLocationSetRows() {
     if (locationIndices.length < state.minLocations) {
       return;
     }
+	
+	const names = [];
+	for (let idx = 0; idx < locationIndices.length; idx += 1) {
+	  names.push(state.points[locationIndices[idx]].name);
+	}
+	
+	const set1Filter = names.filter((name) => {
+	  return parseWordSet(set1WordsEl.value).map((item) => item.name).includes(name);
+	});
+	const set2Filter = names.filter((name) => {
+	  return parseWordSet(set2WordsEl.value).map((item) => item.name).includes(name);
+	});
+	
+	if (set1Filter.length < 2 || set2Filter.length < 1) {
+	  return;
+	}
 
     qualifyingPairCount += 1;
     const key = locationIndices.join(",");
